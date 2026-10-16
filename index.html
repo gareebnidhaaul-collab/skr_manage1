@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#122541">
+  <title>SKR Project Management</title>
+  <style>
+    :root {
+      --navy: #122541;
+      --navy-2: #1c3b63;
+      --blue: #2f65a7;
+      --blue-soft: #eaf2ff;
+      --teal: #087d72;
+      --teal-soft: #e5f7f3;
+      --ink: #1a2b42;
+      --muted: #6a7b91;
+      --line: #a6b6c9;
+      --border: #dbe4ee;
+      --surface: #ffffff;
+      --page: #f3f6fb;
+      --shadow: 0 12px 32px rgba(18, 37, 65, .09);
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--page);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+
+    /* Passcode screen */
+    .gate {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      background:
+        radial-gradient(ellipse at top right, rgba(47,101,167,.32), transparent 42%),
+        linear-gradient(145deg, #0e1d34, #18375d 70%, #10223b);
+    }
+    .gate-card {
+      width: min(420px, 100%);
+      padding: 34px 28px 28px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 22px;
+      background: rgba(255,255,255,.98);
+      text-align: center;
+      box-shadow: 0 24px 75px rgba(0,0,0,.28);
+    }
+    .brand-mark {
+      width: 62px;
+      height: 62px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 18px;
+      border-radius: 18px;
+      background: var(--navy);
+      color: white;
+      font-size: 22px;
+      font-weight: 850;
+      letter-spacing: -.04em;
+    }
+    .gate h1 { margin: 0; color: var(--navy); font-size: 1.55rem; letter-spacing: -.035em; }
+    .gate p { margin: 9px 0 24px; color: var(--muted); font-size: .95rem; }
+    .passcode {
+      width: 100%;
+      height: 56px;
+      border: 1.5px solid #cbd7e5;
+      border-radius: 12px;
+      background: #f8fafd;
+      text-align: center;
+      letter-spacing: .55em;
+      padding-left: .55em;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--navy);
+      outline: none;
+    }
+    .passcode:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(47,101,167,.13); }
+    .enter-btn {
+      margin-top: 14px;
+      width: 100%;
+      min-height: 50px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--navy);
+      color: #fff;
+      font-weight: 750;
+      transition: background .15s ease, transform .15s ease;
+    }
+    .enter-btn:hover { background: var(--navy-2); }
+    .enter-btn:active { transform: translateY(1px); }
+    .gate-error { min-height: 22px; margin: 10px 0 0 !important; color: #b4232b !important; font-size: .88rem !important; }
+
+    /* Main application */
+    .app-header {
+      color: #fff;
+      background: linear-gradient(112deg, var(--navy), #214a78);
+      padding: 26px 22px 30px;
+      box-shadow: 0 5px 18px rgba(18,37,65,.14);
+    }
+    .header-inner { width: min(1320px, 100%); margin: 0 auto; }
+    .topline { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+    .brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
+    .small-mark {
+      flex: 0 0 auto; width: 45px; height: 45px; display: grid; place-items: center;
+      background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.21);
+      border-radius: 13px; font-weight: 850; font-size: 17px;
+    }
+    .app-header h1 { margin: 0; font-size: clamp(1.35rem, 2.7vw, 2rem); letter-spacing: -.04em; }
+    .app-subtitle { margin: 7px 0 0; color: #d5e2f2; font-size: .95rem; }
+    .lock-btn {
+      flex: 0 0 auto; border: 1px solid rgba(255,255,255,.25); color: #fff;
+      background: rgba(255,255,255,.10); padding: 9px 13px; border-radius: 10px; font-weight: 700;
+    }
+    .lock-btn:hover { background: rgba(255,255,255,.18); }
+    .content { width: min(1320px, 100%); margin: 0 auto; padding: 27px 22px 44px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 15px; margin-bottom: 18px; }
+    .section-heading h2 { margin: 0; color: var(--navy); font-size: 1.18rem; }
+    .section-heading p { margin: 5px 0 0; color: var(--muted); font-size: .9rem; }
+    .count-pill { border-radius: 999px; background: #e5edf8; color: var(--navy); padding: 7px 11px; font-weight: 750; font-size: .82rem; white-space: nowrap; }
+    .tree { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start; }
+    .group { min-width: 0; display: flex; flex-direction: column; align-items: stretch; }
+    .branch-cap { display: flex; justify-content: center; align-items: center; height: 24px; }
+    .branch-cap span { display: block; width: 2px; height: 100%; background: var(--line); }
+    .account-card {
+      min-width: 0; overflow: hidden; border-radius: 16px; background: var(--surface);
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+    }
+    .account-top { padding: 16px 17px 15px; background: var(--blue-soft); border-bottom: 1px solid #d6e5fa; border-top: 4px solid var(--blue); }
+    .secondary .account-top { background: var(--teal-soft); border-bottom-color: #ccebe5; border-top-color: var(--teal); }
+    .account-role {
+      display: inline-flex; align-items: center; gap: 7px; margin-bottom: 11px;
+      color: var(--blue); font-size: .73rem; font-weight: 850; letter-spacing: .075em; text-transform: uppercase;
+    }
+    .secondary .account-role { color: var(--teal); }
+    .role-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .email { margin: 0; color: var(--navy); font-size: clamp(.91rem, 1.2vw, 1.02rem); line-height: 1.4; font-weight: 800; overflow-wrap: anywhere; }
+    .account-actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 13px 15px 15px; }
+    .btn {
+      display: inline-flex; justify-content: center; align-items: center; gap: 7px;
+      min-height: 40px; border: 0; border-radius: 9px; padding: 9px 12px;
+      font-size: .86rem; font-weight: 750; transition: filter .12s ease, transform .12s ease;
+    }
+    .btn:hover { filter: brightness(.96); }
+    .btn:active { transform: translateY(1px); }
+    .btn-copy { color: #fff; background: var(--navy); }
+    .btn-credentials { color: #fff; background: var(--teal); }
+    .child-connector { height: 29px; width: 2px; margin: 0 auto; background: var(--line); }
+    .no-secondary {
+      margin-top: 29px; padding: 19px 15px; text-align: center; color: var(--muted);
+      background: rgba(255,255,255,.65); border: 1px dashed #bac8d8; border-radius: 13px;
+      font-size: .88rem;
+    }
+    .no-secondary strong { display: block; color: #52667e; margin-bottom: 3px; }
+    .footer { text-align: center; color: var(--muted); font-size: .82rem; padding: 0 18px 26px; }
+
+    /* Credential pop-up */
+    .modal-layer {
+      display: none; position: fixed; inset: 0; z-index: 20; padding: 18px;
+      background: rgba(9, 22, 40, .68); align-items: center; justify-content: center;
+    }
+    .modal-layer.open { display: flex; }
+    .modal {
+      width: min(520px, 100%); max-height: min(90vh, 760px); overflow: auto;
+      border-radius: 18px; background: #fff; box-shadow: 0 25px 85px rgba(0,0,0,.3); padding: 23px;
+    }
+    .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
+    .modal h2 { margin: 0; color: var(--navy); font-size: 1.23rem; line-height: 1.35; overflow-wrap: anywhere; }
+    .modal-sub { margin: 6px 0 17px; color: var(--muted); font-size: .9rem; overflow-wrap: anywhere; }
+    .close-btn { border: 0; background: #edf2f7; color: var(--ink); border-radius: 9px; padding: 8px 11px; font-weight: 750; flex: 0 0 auto; }
+    .secret-row { padding: 13px; border: 1px solid var(--border); border-radius: 12px; margin-top: 11px; }
+    .secret-label { margin: 0 0 9px; color: #5d7087; font-size: .78rem; font-weight: 850; letter-spacing: .045em; text-transform: uppercase; }
+    .secret-actions { display: flex; align-items: center; gap: 9px; }
+    .secret-value { flex: 1; min-width: 0; color: var(--navy); background: #f4f7fb; border: 1px solid #e3eaf2; border-radius: 8px; padding: 10px 11px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+    .copy-secret { background: var(--navy); color: #fff; flex: 0 0 auto; }
+    .toast {
+      position: fixed; z-index: 50; bottom: 22px; left: 50%; transform: translateX(-50%);
+      max-width: calc(100vw - 30px); text-align: center; border-radius: 10px; padding: 11px 16px;
+      color: #fff; background: #102541; box-shadow: 0 8px 25px rgba(0,0,0,.2); display: none; font-size: .9rem;
+    }
+    .toast.show { display: block; }
+    button:focus-visible, input:focus-visible { outline: 3px solid #efbd4d; outline-offset: 2px; }
+    @media (max-width: 900px) {
+      .tree { grid-template-columns: 1fr; gap: 24px; }
+      .group { width: min(620px, 100%); margin: 0 auto; }
+      .branch-cap { height: 18px; }
+      .email { font-size: 1rem; }
+      .no-secondary { margin-top: 18px; }
+      .child-connector { height: 21px; }
+    }
+    @media (max-width: 520px) {
+      .app-header { padding: 20px 15px 23px; }
+      .content { padding: 22px 14px 35px; }
+      .small-mark { width: 40px; height: 40px; border-radius: 11px; }
+      .topline { align-items: flex-start; }
+      .lock-btn { padding: 8px 10px; font-size: .84rem; }
+      .section-heading { align-items: flex-start; }
+      .count-pill { font-size: .75rem; }
+      .account-actions { flex-direction: column; }
+      .account-actions .btn { width: 100%; }
+      .gate-card { padding: 29px 21px 23px; }
+      .modal { padding: 18px; }
+      .secret-actions { flex-direction: column; align-items: stretch; }
+      .copy-secret { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+    /* Admin and dynamic account views */
+    .toolbar { display:flex; gap:10px; flex-wrap:wrap; margin:0 0 20px; }
+    .notice { padding:12px 14px; border-radius:10px; background:#fff6db; color:#634b00; border:1px solid #f0d98c; margin:0 0 18px; line-height:1.5; }
+    .admin-panel { background:white; border:1px solid var(--border); border-radius:16px; padding:20px; box-shadow:var(--shadow); margin-bottom:22px; }
+    .admin-panel h2 { margin:0 0 14px; color:var(--navy); }
+    .account-topline { display:flex; align-items:center; gap:12px; }
+    .avatar { width:52px; height:52px; flex:0 0 52px; border-radius:50%; object-fit:cover; background:#dce7f5; display:grid; place-items:center; color:var(--navy); font-weight:800; }
+    .account-info { min-width:0; }
+    .admin-actions { display:flex; gap:8px; flex-wrap:wrap; padding:13px 15px 15px; }
+    .btn-secondary { background:#e8eef6; color:var(--navy); }
+    .btn-danger { background:#b4232b; color:white; }
+    .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .field { display:flex; flex-direction:column; gap:6px; }
+    .field.full { grid-column:1/-1; }
+    .field label { font-weight:700; font-size:.88rem; color:#42566e; }
+    .field input,.field select { width:100%; min-height:43px; border:1px solid #cbd7e5; border-radius:9px; padding:9px 11px; color:var(--ink); background:white; }
+    .form-note { color:var(--muted); font-size:.84rem; line-height:1.45; margin:12px 0 0; }
+    .empty-state { padding:28px; background:white; border:1px dashed #bac8d8; border-radius:13px; text-align:center; color:var(--muted); }
+    .mode-tag { display:inline-block; padding:5px 9px; border-radius:999px; background:#e5f7f3; color:#087d72; font-size:.75rem; font-weight:800; margin-top:6px; }
+    @media(max-width:520px) { .form-grid{grid-template-columns:1fr} .field.full{grid-column:auto} }
+    .account-details { border-top:1px solid var(--border); padding:11px 15px; color:#42566e; font-size:.88rem; }
+    .account-details summary { cursor:pointer; color:var(--navy); font-weight:750; }
+    .detail-content { padding-top:7px; }
+    .detail-content p { margin:7px 0; overflow-wrap:anywhere; }
+    .detail-value { white-space:pre-wrap; }
+    .person-name { margin:3px 0 0; color:#52667e; font-size:.9rem; font-weight:650; overflow-wrap:anywhere; }
+    .field textarea { width:100%; border:1px solid #cbd7e5; border-radius:9px; padding:9px 11px; color:var(--ink); background:white; font:inherit; resize:vertical; }
+  </style>
+</head>
+<body>
+  <section class="gate" id="gateScreen" aria-label="Passcode entry">
+    <form class="gate-card" id="gateForm" autocomplete="off">
+      <div class="brand-mark" aria-hidden="true">SKR</div>
+      <h1>SKR Project Management</h1>
+      <p>Enter your 6-digit passcode to continue</p>
+      <input class="passcode" id="passcodeInput" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" minlength="6" autocomplete="one-time-code" aria-label="6-digit passcode" placeholder="••••••" required>
+      <button class="enter-btn" type="submit">Unlock dashboard</button>
+      <p class="gate-error" id="gateError" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <div id="mainApp" class="hidden">
+    <header class="app-header"><div class="header-inner"><div class="topline">
+      <div class="brand"><div class="small-mark" aria-hidden="true">SKR</div><div><h1>SKR Project Management</h1><p class="app-subtitle">Gmail Account Directory</p></div></div>
+      <div class="toolbar"><button class="lock-btn hidden" id="importLocalButton" type="button">Import saved browser data</button><button class="lock-btn hidden" id="backupButton" type="button">Export backup</button><button class="lock-btn hidden" id="addAccountButton" type="button">Add account</button><button class="lock-btn" id="lockButton" type="button">Lock dashboard</button></div>
+    </div></div></header>
+    <main class="content">
+      <div class="notice hidden" id="storageNotice" role="status"></div>
+      <section class="admin-panel hidden" id="adminPanel">
+        <h2 id="editorTitle">Add Gmail account</h2>
+        <form id="accountForm">
+          <input type="hidden" id="editId">
+          <div class="form-grid">
+            <div class="field"><label for="accountEmail">Gmail address</label><input id="accountEmail" type="email" required maxlength="254" autocomplete="off"></div>
+            <div class="field"><label for="accountRole">Account role</label><select id="accountRole"><option value="primary">Primary</option><option value="secondary">Secondary</option></select></div>
+            <div class="field"><label for="fullName">Full name</label><input id="fullName" type="text" maxlength="200"></div>
+            <div class="field"><label for="contact">Contact</label><input id="contact" type="text" maxlength="200"></div>
+            <div class="field full"><label for="address">Address</label><textarea id="address" rows="2" maxlength="1500"></textarea></div>
+            <div class="field"><label for="createdDate">Account creation date</label><input id="createdDate" type="date"></div>
+            <div class="field"><label for="gmPassword">Gmail password</label><input id="gmPassword" type="password" autocomplete="new-password" maxlength="500"></div>
+            <div class="field"><label for="capitalPassword">Capital password</label><input id="capitalPassword" type="password" autocomplete="new-password" maxlength="500"></div>
+            <div class="field"><label for="exnessPassword">Exness password</label><input id="exnessPassword" type="password" autocomplete="new-password" maxlength="500"></div>
+            <div class="field full"><label for="paymentHistory">Payment history details</label><textarea id="paymentHistory" rows="4" maxlength="5000" placeholder="Add one payment per line, with dates, amounts and notes as needed"></textarea></div>
+            <div class="field full"><label for="accountNotes">Additional notes</label><textarea id="accountNotes" rows="3" maxlength="3000"></textarea></div>
+            <div class="field"><label for="profileUrl">Profile image URL</label><input id="profileUrl" type="url" placeholder="https://…" maxlength="2000"></div>
+            <div class="field"><label for="profileFile">Or upload profile image</label><input id="profileFile" type="file" accept="image/*"></div>
+            <div class="field full"><label for="parentEmail">Parent Gmail (secondary accounts only)</label><select id="parentEmail"><option value="">No parent / primary account</option></select></div>
+          </div>
+          <p class="form-note">This page saves shared data in Supabase. The user passcode can view all account details and all three passwords; keep it private. Admin changes become visible to all users. Uploaded photos are stored privately and served with temporary links.</p>
+          <div class="toolbar" style="margin:16px 0 0"><button class="btn btn-copy" type="submit">Save account</button><button class="btn btn-secondary hidden" id="cancelEdit" type="button">Cancel edit</button></div>
+        </form>
+      </section>
+      <div class="section-heading"><div><h2>Account Structure</h2><p id="viewDescription">Accounts grouped by their assigned parent.</p></div><span class="count-pill" id="accountCount"></span></div>
+      <section class="tree" id="accountTree" aria-label="Account hierarchy"></section>
+    </main>
+    <footer class="footer">SKR Project Management · <span id="viewMode">Read-only view</span></footer>
+  </div>
+
+  <div class="modal-layer" id="credentialModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <section class="modal"><div class="modal-head"><h2 id="modalTitle">Account credentials</h2><button class="close-btn" id="closeModal" type="button">Close</button></div><p class="modal-sub" id="modalAccount"></p>
+      <div class="secret-row"><p class="secret-label">Gmail password</p><div class="secret-actions"><div class="secret-value" id="gmPasswordValue"></div><button class="btn copy-secret" type="button" data-secret="gm">Copy password</button></div></div>
+      <div class="secret-row"><p class="secret-label">Capital password</p><div class="secret-actions"><div class="secret-value" id="capitalPasswordValue"></div><button class="btn copy-secret" type="button" data-secret="capital">Copy password</button></div></div><div class="secret-row"><p class="secret-label">Exness password</p><div class="secret-actions"><div class="secret-value" id="exnessPasswordValue"></div><button class="btn copy-secret" type="button" data-secret="exness">Copy password</button></div></div>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    // Only the publishable key is used in this page. The server secret stays inside Supabase Edge Functions.
+    const SUPABASE_FUNCTION_URL = 'https://gnspuhjqaoyfdkagsaua.supabase.co/functions/v1/skr-management';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_fHSBe4nSYvEupnYXNtDdZw_JT3HdIVF';
+    const TOKEN_KEY = 'skr-management-session';
+    const ROLE_KEY = 'skr-management-role';
+    const LEGACY_STORAGE_KEY = 'skr-project-management.accounts.v1';
+    const $ = (id) => document.getElementById(id);
+    const gateScreen=$('gateScreen'), mainApp=$('mainApp'), passcodeInput=$('passcodeInput'), gateError=$('gateError');
+    const modal=$('credentialModal'), toast=$('toast'), tree=$('accountTree');
+    let accounts=[], mode='user', toastTimer=null, pendingImage='';
+    async function callApi(action,payload={},token=sessionStorage.getItem(TOKEN_KEY)){
+      const headers={'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY};
+      if(token) headers.Authorization='Bearer '+token;
+      const response=await fetch(SUPABASE_FUNCTION_URL,{method:'POST',headers,body:JSON.stringify({action,...payload})});
+      let result={};try{result=await response.json();}catch{}
+      if(!response.ok){const error=new Error(result.error||'The request failed.');error.status=response.status;throw error;}
+      return result;
+    }
+    async function loadAccounts(){const result=await callApi('list');accounts=result.accounts||[];return accounts;}
+    $('gateForm').addEventListener('submit',async(event)=>{event.preventDefault();const value=passcodeInput.value;try{const result=await callApi('login',{passcode:value},'');sessionStorage.setItem(TOKEN_KEY,result.token);sessionStorage.setItem(ROLE_KEY,result.role);mode=result.role;await loadAccounts();setupMode();render();gateError.textContent='';gateScreen.classList.add('hidden');mainApp.classList.remove('hidden');passcodeInput.value='';}catch(error){sessionStorage.removeItem(TOKEN_KEY);sessionStorage.removeItem(ROLE_KEY);gateError.textContent=error.message||'Could not connect. Please try again.';passcodeInput.value='';passcodeInput.focus();}});
+    function setupMode(){const admin=mode==='admin';$('adminPanel').classList.toggle('hidden',!admin);$('addAccountButton').classList.toggle('hidden',!admin);$('backupButton').classList.toggle('hidden',!admin);$('importLocalButton').classList.toggle('hidden',!admin);$('viewMode').textContent=admin?'Admin dashboard':'Read-only view';$('viewDescription').textContent=admin?'Manage accounts, credentials and profile images.':'Accounts and available credentials are shown in read-only mode.';}
+    function lockDashboard(){closeModal();mainApp.classList.add('hidden');gateScreen.classList.remove('hidden');sessionStorage.removeItem(TOKEN_KEY);sessionStorage.removeItem(ROLE_KEY);passcodeInput.value='';gateError.textContent='';mode='user';passcodeInput.focus();}
+    $('lockButton').addEventListener('click',lockDashboard);
+    function showToast(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2600);}
+    async function copyText(value,label){try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(value);else{const helper=document.createElement('textarea');helper.value=value;helper.setAttribute('readonly','');helper.style.position='fixed';helper.style.left='-9999px';document.body.appendChild(helper);helper.select();if(!document.execCommand('copy'))throw new Error();helper.remove();}showToast(label+' copied');}catch(e){showToast('Copy unavailable. Please select and copy manually.');}}
+    const esc=(value)=>String(value||'').replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function card(account,roleLabel){const secondary=account.role==='secondary';const image=account.profileImage;const avatar=image?'<img class="avatar" src="'+esc(image)+'" alt="" referrerpolicy="no-referrer">':'<div class="avatar" aria-hidden="true">'+esc((account.email||'?').slice(0,1).toUpperCase())+'</div>';const details=[['Full name',account.fullName],['Contact',account.contact],['Address',account.address],['Account creation date',account.createdDate],['Payment history',account.paymentHistory],['Additional notes',account.notes]].filter(item=>item[1]).map(item=>'<p><strong>'+esc(item[0])+':</strong> <span class="detail-value">'+esc(item[1])+'</span></p>').join('');const detailBlock='<details class="account-details"><summary>Personal details &amp; payment history</summary><div class="detail-content">'+(details||'<p>No personal or payment details have been added.</p>')+'</div></details>';return '<div class="account-card '+(secondary?'secondary':'primary')+'"><div class="account-top"><div class="account-topline">'+avatar+'<div class="account-info"><div class="account-role"><span class="role-dot"></span>'+esc(roleLabel)+'</div><p class="email">'+esc(account.email)+'</p>'+(account.fullName?'<p class="person-name">'+esc(account.fullName)+'</p>':'')+'</div></div></div>'+detailBlock+'<div class="account-actions"><button class="btn btn-copy" type="button" data-copy="'+esc(account.email)+'">Copy email</button><button class="btn btn-credentials" type="button" data-credentials="'+esc(account.id)+'">View passwords</button>'+(mode==='admin'?'<button class="btn btn-secondary" type="button" data-edit="'+esc(account.id)+'">Edit</button><button class="btn btn-danger" type="button" data-delete="'+esc(account.id)+'">Delete</button>':'')+'</div></div>';}    function render(){tree.replaceChildren();const primaries=accounts.filter(a=>a.role==='primary');const secondaries=accounts.filter(a=>a.role==='secondary');$('accountCount').textContent=accounts.length+' account'+(accounts.length===1?'':'s')+' · '+primaries.length+' primary · '+secondaries.length+' secondary';if(!accounts.length){tree.innerHTML='<div class="empty-state">No accounts have been added.</div>';return;}primaries.forEach((primary,index)=>{const group=document.createElement('article');group.className='group';group.innerHTML='<div class="branch-cap" aria-hidden="true"><span></span></div>'+card(primary,'Primary account ('+(index+1)+')');const children=secondaries.filter(a=>a.parentId===primary.id);if(children.length){children.forEach(child=>{const connector=document.createElement('div');connector.className='child-connector';connector.setAttribute('aria-hidden','true');group.appendChild(connector);group.insertAdjacentHTML('beforeend',card(child,'Secondary account'));});}else{group.insertAdjacentHTML('beforeend','<div class="no-secondary"><strong>Primary account only</strong>No secondary account listed</div>');}tree.appendChild(group);});const orphans=secondaries.filter(a=>!primaries.some(p=>p.id===a.parentId));if(orphans.length){const group=document.createElement('article');group.className='group';group.innerHTML='<div class="empty-state">Secondary accounts without a valid parent</div>';orphans.forEach(a=>group.insertAdjacentHTML('beforeend',card(a,'Secondary account')));tree.appendChild(group);}if(!primaries.length&&secondaries.length)tree.insertAdjacentHTML('afterbegin','<div class="empty-state">There are no primary accounts yet.</div>');}
+    tree.addEventListener('click',(event)=>{const button=event.target.closest('button');if(!button)return;if(button.dataset.copy)copyText(button.dataset.copy,'Email');if(button.dataset.credentials)openCredentials(button.dataset.credentials);if(button.dataset.edit)beginEdit(button.dataset.edit);if(button.dataset.delete)deleteAccount(button.dataset.delete);});
+    function openCredentials(id){const account=accounts.find(a=>a.id===id);if(!account)return;$('modalAccount').textContent=account.email;$('gmPasswordValue').textContent=account.gmPassword||'Not provided';$('capitalPasswordValue').textContent=account.capitalPassword||'Not provided';$('exnessPasswordValue').textContent=account.exnessPassword||'Not provided';$('gmPasswordValue').dataset.value=account.gmPassword||'';$('capitalPasswordValue').dataset.value=account.capitalPassword||'';$('exnessPasswordValue').dataset.value=account.exnessPassword||'';modal.classList.add('open');$('closeModal').focus();}
+    document.querySelectorAll('[data-secret]').forEach((button)=>button.addEventListener('click',()=>{const key=button.dataset.secret==='gm'?'gmPasswordValue':(button.dataset.secret==='capital'?'capitalPasswordValue':'exnessPasswordValue');const value=$(key).dataset.value||'';if(value)copyText(value,'Password');else showToast('No password has been added for this field.');}));
+    function closeModal(){modal.classList.remove('open');$('gmPasswordValue').textContent='';$('capitalPasswordValue').textContent='';$('exnessPasswordValue').textContent='';}
+    $('closeModal').addEventListener('click',closeModal);modal.addEventListener('click',(event)=>{if(event.target===modal)closeModal();});document.addEventListener('keydown',(event)=>{if(event.key==='Escape')closeModal();});
+    function updateParentOptions(selected){const select=$('parentEmail');select.innerHTML='<option value="">No parent / primary account</option>';accounts.filter(a=>a.role==='primary'&&a.id!==selected).forEach(a=>{const option=document.createElement('option');option.value=a.id;option.textContent=a.email;select.appendChild(option);});}
+    function resetForm(){ $('accountForm').reset();$('editId').value='';pendingImage='';$('editorTitle').textContent='Add Gmail account';$('cancelEdit').classList.add('hidden');updateParentOptions('');}
+    $('addAccountButton').addEventListener('click',()=>{resetForm();$('accountEmail').focus();$('adminPanel').scrollIntoView({behavior:'smooth'});});
+    $('cancelEdit').addEventListener('click',resetForm);
+    function beginEdit(id){const a=accounts.find(x=>x.id===id);if(!a)return;$('editId').value=a.id;$('accountEmail').value=a.email;$('accountRole').value=a.role;$('fullName').value=a.fullName||'';$('contact').value=a.contact||'';$('address').value=a.address||'';$('createdDate').value=a.createdDate||'';$('paymentHistory').value=a.paymentHistory||'';$('accountNotes').value=a.notes||'';$('gmPassword').value=a.gmPassword||'';$('capitalPassword').value=a.capitalPassword||'';$('exnessPassword').value=a.exnessPassword||'';const imageRef=a.profileImageRef||a.profileImage||'';$('profileUrl').value=imageRef.startsWith('storage://')?'':imageRef;pendingImage=imageRef.startsWith('storage://')?imageRef:'';updateParentOptions(a.id);$('parentEmail').value=a.parentId||'';$('editorTitle').textContent='Edit Gmail account';$('cancelEdit').classList.remove('hidden');$('adminPanel').scrollIntoView({behavior:'smooth'});}
+    $('accountRole').addEventListener('change',()=>{if($('accountRole').value==='primary')$('parentEmail').value='';});
+    $('profileFile').addEventListener('change',()=>{const file=$('profileFile').files[0];if(!file)return;if(!file.type.startsWith('image/')){showToast('Choose an image file.');$('profileFile').value='';return;}if(file.size>1500000){showToast('For browser storage, use an image under 1.5 MB or add an image URL.');$('profileFile').value='';return;}const reader=new FileReader();reader.onload=()=>{pendingImage=String(reader.result);$('profileUrl').value='';};reader.onerror=()=>showToast('Could not read that image.');reader.readAsDataURL(file);});
+    $('accountForm').addEventListener('submit',async(event)=>{event.preventDefault();const id=$('editId').value;const email=$('accountEmail').value.trim();if(accounts.some(a=>a.email.toLowerCase()===email.toLowerCase()&&a.id!==id)){showToast('That Gmail address is already in the list.');return;}const role=$('accountRole').value;const parentId=role==='secondary'?$('parentEmail').value:'';if(role==='secondary'&&(!parentId||!accounts.some(a=>a.id===parentId&&a.role==='primary'))){showToast('Choose a valid primary parent for this secondary account.');return;}const url=$('profileUrl').value.trim();if(url&&!/^https?:\/\//i.test(url)){showToast('Profile image URL must start with http:// or https://.');return;}const previous=accounts.find(a=>a.id===id);const entry={id:id||('a'+Date.now()+Math.random().toString(36).slice(2,6)),email,role,parentId,fullName:$('fullName').value.trim(),contact:$('contact').value.trim(),address:$('address').value.trim(),createdDate:$('createdDate').value,paymentHistory:$('paymentHistory').value.trim(),notes:$('accountNotes').value.trim(),gmPassword:$('gmPassword').value,capitalPassword:$('capitalPassword').value,exnessPassword:$('exnessPassword').value,profileImage:url||pendingImage||(previous?(previous.profileImageRef||previous.profileImage):'')};try{await callApi('save',{account:entry});await loadAccounts();resetForm();render();showToast('Account saved and shared through Supabase.');}catch(error){showToast(error.message||'Account could not be saved.');}});
+    async function deleteAccount(id){const target=accounts.find(a=>a.id===id);if(!target)return;const children=accounts.filter(a=>a.parentId===id);const message='Delete '+target.email+'?'+(children.length?' This will also remove '+children.length+' linked secondary account(s).':'')+' This cannot be undone.';if(!window.confirm(message))return;try{await callApi('delete',{id});await loadAccounts();render();showToast('Account deleted.');}catch(error){showToast(error.message||'Account could not be deleted.');}}
+    $('importLocalButton').addEventListener('click',async()=>{if(mode!=='admin')return;let localAccounts=[];try{const raw=localStorage.getItem(LEGACY_STORAGE_KEY);if(!raw){showToast('No saved account data was found in this browser.');return;}localAccounts=JSON.parse(raw);if(!Array.isArray(localAccounts)||!localAccounts.length){showToast('No saved account data was found in this browser.');return;}}catch(error){showToast('Could not read this browser’s saved data.');return;}if(!window.confirm('Import '+localAccounts.length+' saved account(s) from this browser? Matching cloud accounts will be overwritten with these saved details. Other cloud accounts will remain.'))return;let imported=0;try{localAccounts.sort((a,b)=>(a.role==='primary'?0:1)-(b.role==='primary'?0:1));for(const account of localAccounts){await callApi('save',{account});imported++;}await loadAccounts();render();showToast(imported+' saved account(s) imported.');}catch(error){await loadAccounts();render();showToast(imported+' account(s) imported before this error: '+(error.message||'request failed'));}});
+    $('backupButton').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({format:'skr-accounts-v1',exportedAt:new Date().toISOString(),accounts},null,2)],{type:'application/json'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='skr-accounts-backup.json';link.click();URL.revokeObjectURL(link.href);showToast('Backup downloaded. Keep it private; it includes passwords.');});
+    window.addEventListener('load',async()=>{const token=sessionStorage.getItem(TOKEN_KEY);if(token){try{mode=sessionStorage.getItem(ROLE_KEY)==='admin'?'admin':'user';await loadAccounts();setupMode();render();gateScreen.classList.add('hidden');mainApp.classList.remove('hidden');return;}catch{sessionStorage.removeItem(TOKEN_KEY);sessionStorage.removeItem(ROLE_KEY);}}passcodeInput.focus({preventScroll:true});});
+    window.setInterval(async()=>{if(mainApp.classList.contains('hidden')||!sessionStorage.getItem(TOKEN_KEY))return;try{await loadAccounts();render();}catch(error){if(error.status===401)lockDashboard();else showToast('Live data refresh failed. Check your connection.');}},45000);
+  </script>
+</body>
+</html>
+</body>
+</html>
